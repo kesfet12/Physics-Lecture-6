@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>محاضرات الرنين - الترجمة الفورية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #202124;
+            --accent-color: #0056b3;
+            --trans-bg: #f0f8ff; /* لون خلفية الترجمة */
+            --trans-border: #0056b3;
+            --nav-bg: #f8f9fa;
+            --highlight: #e8f0fe;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Roboto', 'Cairo', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            padding-bottom: 90px;
+            min-height: 100vh;
+            overscroll-behavior-y: none;
+        }
+
+        .content-container {
+            padding: 20px 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            direction: ltr; /* المحاذاة الأساسية يسار */
+        }
+
+        /* تنسيق بلوك النص الكامل (انكليزي + زر + عربي) */
+        .text-block {
+            margin-bottom: 25px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+        }
+
+        .title-text {
+            font-weight: bold;
+            font-size: 1.6rem;
+            color: #000;
+            margin-bottom: 15px;
+            display: block;
+            border-bottom: 3px solid var(--accent-color);
+            padding-bottom: 10px;
+            direction: ltr;
+        }
+
+        .sub-title {
+            font-weight: bold;
+            font-size: 1.4rem;
+            color: var(--accent-color);
+            margin-top: 20px;
+            margin-bottom: 10px;
+            display: block;
+            direction: ltr;
+        }
+
+        /* النص الإنكليزي */
+        .english-paragraph {
+            line-height: 2.0;
+            font-size: 1.25rem;
+            color: #333;
+            margin-bottom: 8px;
+            text-align: left;
+        }
+
+        /* الكلمات التفاعلية */
+        .interactive-word {
+            cursor: pointer;
+            border-bottom: 1px dotted #999;
+            transition: background 0.2s;
+        }
+        .interactive-word:hover {
+            background-color: #e3f2fd;
+            color: var(--accent-color);
+        }
+        .interactive-word:active {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        /* زر إظهار الترجمة */
+        .toggle-trans-btn {
+            background: none;
+            border: none;
+            color: var(--accent-color);
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.95rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 0;
+            direction: rtl; /* الزر عربي */
+            width: 100%;
+        }
+        
+        .toggle-trans-btn:hover {
+            opacity: 0.8;
+        }
+
+        /* صندوق الترجمة المخفي */
+        .inline-translation {
+            display: none; /* مخفي افتراضياً */
+            background-color: var(--trans-bg);
+            color: #000;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 5px;
+            border-right: 4px solid var(--trans-border);
+            font-family: 'Cairo', sans-serif;
+            font-size: 1.15rem;
+            line-height: 1.8;
+            direction: rtl;
+            text-align: justify;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        /* الصور */
+        .lecture-image-container {
+            width: 100%;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .lecture-image {
+            max-width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: 1px solid #eee;
+        }
+
+        /* أزرار التنقل */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 70px;
+            background-color: var(--nav-bg);
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.05);
+            z-index: 1000;
+            direction: rtl;
+        }
+
+        .nav-btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 50px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .nav-btn:disabled {
+            background-color: #e0e0e0;
+            color: #999;
+            box-shadow: none;
+        }
+        .page-counter {
+            font-family: 'Cairo', sans-serif;
+            font-weight: bold;
+            color: #555;
+            background: #e9ecef;
+            padding: 5px 15px;
+            border-radius: 15px;
+        }
+
+        /* Bottom Sheet (للكلمات الفردية فقط) */
+        .sheet-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 2000;
+            opacity: 0; visibility: hidden; transition: all 0.3s;
+            display: flex; align-items: flex-end;
+        }
+        .sheet-overlay.active { opacity: 1; visibility: visible; }
+        .sheet-content {
+            background: white; width: 100%; padding: 25px;
+            border-top-left-radius: 25px; border-top-right-radius: 25px;
+            transform: translateY(100%); transition: transform 0.3s;
+            text-align: center;
+        }
+        .sheet-overlay.active .sheet-content { transform: translateY(0); }
+        
+        .selected-word-box {
+            background-color: #e3f2fd;
+            border: 1px solid #bbdefb;
+            padding: 15px; border-radius: 12px;
+            margin-top: 10px;
+        }
+        .sw-container {
+            display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 5px;
+        }
+        .audio-btn {
+            background: none; border: none; cursor: pointer; font-size: 1.5rem; color: var(--accent-color);
+        }
+        .sw-english {
+            font-family: 'Roboto', sans-serif; font-weight: bold; font-size: 1.4rem; color: var(--accent-color);
+        }
+        .sw-arabic {
+            font-family: 'Cairo', sans-serif; font-size: 1.3rem; color: #333; font-weight: bold; display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="content-container" id="contentArea"></div>
+
+    <div class="bottom-nav">
+        <button class="nav-btn" id="nextBtn" onclick="changePage(1)">التالي &#8592;</button>
+        <div class="page-counter" id="pageIndicator">1 / 4</div>
+        <button class="nav-btn" id="prevBtn" onclick="changePage(-1)">&#8594; السابق</button>
+    </div>
+
+    <div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet(event)">
+        <div class="sheet-content">
+            <div style="font-family:'Cairo'; color:#666; margin-bottom:10px;">معنى الكلمة:</div>
+            <div id="selectedWordBox" class="selected-word-box">
+                <div class="sw-container">
+                    <span id="swEnglish" class="sw-english"></span>
+                    <button id="audioBtn" class="audio-btn" onclick="playAudio()">🔊</button>
+                </div>
+                <span id="swArabic" class="sw-arabic"></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- القاموس الشامل (مفرد/جمع/أفعال) ---
+        const dictionary = {
+            "the": "الـ", "of": "من/لـ", "in": "في", "and": "و", "is": "هو/يكون", "also": "أيضًا",
+            "are": "هم/يكونون", "to": "إلى/لـ", "a": "أداة تنكير", "an": "أداة تنكير", "before": "قبل",
+            "with": "مع", "without": "بدون", "or": "أو", "by": "بواسطة", "that": "الذي/ذلك",
+            "which": "الذي/التي", "this": "هذا", "these": "هؤلاء/هذه", "it": "هو/هي", "patient": "مريض",
+            "can": "يمكن", "be": "يكون", "from": "من", "for": "لأجل", "on": "على", 
+            "so": "لذلك", "such": "مثل", "as": "كـ/مثل", "at": "عند/في", "but": "لكن", 
+            "very": "جداً", "more": "أكثر", "less": "أقل", "most": "معظم/الأكثر",
+            "what": "ماذا/ما", "you": "أنت", "do": "تفعل", "because": "لأن", "some": "بعض",
+            "when": "عندما", "where": "أين/حيث", "all": "الكل", "any": "أي", "not": "لا/ليس",
+            "often": "غالباً", "although": "رغم أن", "hence": "وبالتالي", "even": "حتى",
+            "about": "تقريباً/حول", "its": "الخاص به", "their": "الخاص بهم", "has": "لديه/يملك",
+            "have": "لدينا/يملكون", "does": "يفعل", "let's": "دعنا", "say": "يقول/لنقل",
+            "between": "بين", "now": "الآن", "just": "فقط", "later": "لاحقاً", "only": "فقط",
+            "if": "إذا/لو", "we": "نحن", "us": "نحن (ضمير)", "let": "دع", "into": "إلى داخل",
+            "how": "كيف", "no": "لا", "other": "آخر", "will": "سوف", "do": "يفعل",
+            "explain": "يشرح", "first": "أولاً", "mean": "يعني/يقصد", "phase": "طور",
+            "in-phase": "بنفس الطور", "diphase": "اختلاف الطور", "de-phase": "خارج الطور",
+            "figure": "شكل", "see": "يرى", "two": "اثنين", "wheel": "عجلة", "wheels": "عجلات",
+            "arrow": "سهم", "arrows": "أسهم", "rotate": "يدور", "speed": "سرعة",
+            "same": "نفس", "angle": "زاوية", "therefore": "لذلك", "point": "يؤشر/نقطة",
+            "direction": "اتجاه", "time": "وقت", "another": "آخر", "different": "مختلف",
+            "out": "خارج", "rf": "تردد راديوي", "pulse": "نبضة", "mentioned": "مذكور", 
+            "previously": "سابقاً", "section": "قسم", "person": "شخص", "placed": "موضوع", 
+            "mri": "رنين مغناطيسي", "scanner": "جهاز فحص", "thing": "شيء", "happens": "يحدث", 
+            "precession": "بدارية (حركة)", "spins": "سبينات (دوران)", "spin": "سبين (دوران)", 
+            "around": "حول", "external": "خارجي", "magnetic": "مغناطيسي", "field": "مجال", 
+            "fields": "مجالات", "z-axis": "محور Z", "happen": "يحدث", "temporarily": "مؤقتاً", 
+            "switched": "شُغِّل/مُبدل", "x-": "سيني", "y-": "صادي", "y-axis": "محور Y", "x-axis": "محور X",
+            "occur": "يحدث", "second": "ثاني", "applied": "مطبق", "static": "ثابت", 
+            "resultant": "ناتج/محصلة", "movement": "حركة", "net": "صافي", "magnetization": "تمغنط", 
+            "isochromatic": "متساوي اللون (تردد)", "complicated": "معقد", "motion": "حركة", 
+            "due": "بسبب", "oscillating": "متذبذب", "frequency": "تردد", "precessing": "دائر (بدارية)", 
+            "simple": "بسيط", "rotation": "دوران", "vector": "متجه", "results": "ينتج", 
+            "x-y-plane": "مستوى X-Y", "plane": "مستوى", "90": "90", "90°": "90 درجة", 
+            "degree": "درجة", "degrees": "درجات", "dephasing": "عدم توافق الطور", 
+            "components": "مكونات", "starts": "يبدأ", "start": "يبدأ", "straight": "مباشرة", 
+            "away": "حالاً/بعيداً", "re-growth": "إعادة نمو", "z-direction": "اتجاه Z", 
+            "shown": "موضح", "next": "تالي/قادم", "18": "1.8", "19": "1.9", "110": "1.10",
+            "15": "15", "a": "أ", "b": "ب", "c": "ج",
+            "excitation": "تهييج", "system": "نظام", "acquire": "يستحوذ/يجمع", "data": "بيانات",
+            "must": "يجب", "perform": "يؤدي/يجري", "quick": "سريع", "measurement": "قياس",
+            "pre-scan": "فحص أولي", "determine": "يحدد", "protons": "بروتونات", "proton": "بروتون",
+            "spinning": "يدور", "larmor": "لارمور", "selecting": "اختيار", "important": "مهم", 
+            "uses": "يستخدم", "step": "خطوة", "once": "حالما/مرة", "determined": "محدد", 
+            "acquisition": "استحواذ", "send": "يرسل", "radio": "راديو", "amount": "كمية", 
+            "amounts": "كميات", "small": "صغير", "milliseconds": "ملي ثانية", "achieve": "يحقق/ينجز", 
+            "achieved": "متحقق", "burst": "دفعة/انفجار", "short": "قصير", "range": "نطاق/مدى", 
+            "tens": "عشرات", "mhz": "ميغاهرتز", "process": "عملية", "sometimes": "أحياناً", 
+            "called": "يسمى", "durations": "فترات زمنية", "understand": "يفهم", "deeply": "بعمق",
+            "through": "من خلال", "following": "تالي", "example": "مثال", "assume": "يفترض", 
+            "work": "يعمل", "works": "يعمل", "15": "1.5", "tesla": "تسلا", "center": "مركز",
+            "operating": "تشغيل", "63855": "63.855", "calculated": "محسوب", "using": "باستخدام",
+            "equation": "معادلة", "ωo=γbo": "معادلة لارمور", "order": "أجل/نظام", "manipulate": "يتلاعب/يتحكم",
+            "matches": "يطابق", "resonance": "رنين", "comes": "يأتي", "name": "اسم",
+            "imaging": "تصوير", "opera": "أوبرا", "singer": "مغني", "sings": "يغني",
+            "high": "عالي", "note": "نوتة/ملاحظة", "crystal": "كريستال", "glass": "زجاج",
+            "shatters": "يتحطم", "pieces": "قطع", "principle": "مبدأ", "respond": "يستجيب", 
+            "would": "سوف/قد", "59347": "59.347", "nothing": "لا شيء", "certain": "معين/محدد",
+            "strength": "قوة", "amplitude": "سعة", "period": "فترة", "possible": "ممكن", 
+            "perpendicular": "عمودي", "case": "حالة", "16": "16", "note": "لاحظ/ملاحظة", 
+            "use": "استخدام", "vectors": "متجهات", "facilitated": "سهل/يسر", "imagine": "يتخيل", 
+            "happening": "يحدث", "impossible": "مستحيل", "event": "حدث", "draws": "يرسم", 
+            "flipped": "قلب", "later": "لاحقاً", "parameter": "معامل", "sequence": "تسلسل", 
+            "flip": "قلب/انقلاب", "angle": "زاوية", "fa": "زاوية الانقلاب", "indicates": "يشير", 
+            "number": "عدد/رقم", "1": "1", "180": "180", "1o": "1 درجة", "180o": "180 درجة", "90o": "90 درجة",
+            "relaxation": "استرخاء", "becomes": "يصبح", "interesting": "مثير للاهتمام",
+            "rotated": "دار", "means": "يعني", "raised": "ارتفع/مرفوع", "higher": "أعلى", 
+            "state": "حالة", "states": "حالات", "occurs": "يحدث", "absorbed": "امتص", 
+            "energy": "طاقة", "perturbation": "اضطراب", "like": "يحب/مثل", "want": "يريد", 
+            "continue": "يستمر", "situation": "وضع", "tend": "يميل", "return": "يعود/رجوع", 
+            "normal": "طبيعي", "low": "منخفض", "equilibrium": "توازن", "compared": "مقارن",
+            "abnormal": "غير طبيعي", "walking": "مشي", "hands": "يدين", "long": "طويل", 
+            "inevitably": "لا محالة", "prefer": "يفضل", "natural": "طبيعي", "feet": "قدمين", 
+            "general": "عام", "thermodynamics": "ديناميكا حرارية", "every": "كل", "seeks": "يسعى",
+            "lowest": "أدنى", "level": "مستوى", "lineup": "اصطفاف", "words": "كلمات", 
+            "power": "طاقة/قدرة", "perturbed": "مضطرب", "original": "أصلي", "each": "كل", 
+            "characterization": "توصيف/تميز", "divided": "مقسم", "parts": "أجزاء", "t1": "T1", "t2": "T2",
+            "112": "1.12", "111": "1.11"
+        };
+
+        const pages = [
+            // السلايد الأول
+            {
+                content: [
+                    {
+                        text: "1.9 In-Phase and Diphase",
+                        trans: "1.9 بنفس الطور واختلاف الطور",
+                        isTitle: true
+                    },
+                    {
+                        text: "To explain first what do we mean by Phase?",
+                        trans: "حتى نشرح بالأول شقصدنا بالطور؟"
+                    },
+                    {
+                        text: "In Figure 15 we see two wheels with an arrow. (a) The wheels rotate in the same speed and in the same angle. The arrows will therefore point in the same direction at any time. Say the wheels rotate in the same phase (in-Phase). Another two wheels (b) with different angle therefore, we say out of phase (de-phase).",
+                        trans: "بالشكل 15 نشوف  (عجلات) بيهم سهم. (a) العجلات تدور بنفس السرعة وبنفس الزاوية. لذلك الأسهم راح تأشر بنفس الاتجاه بأي وقت. نكول العجلات تدور بنفس الطور (in-Phase). عجلتين ثانية (b) بزاوية مختلفة، لذلك نكول عليها خارج الطور (de-phase)."
+                    },
+                    {
+                         type: 'image',
+                         src: 'figure15_wheels.jpg'
+                    },
+                    {
+                        text: "1.10 RF Pulse",
+                        trans: "1.10 نبضة التردد الراديوي (RF)",
+                        isSubTitle: true
+                    },
+                    {
+                        text: "As mentioned previously in section 1.8, if the person placed in the MRI scanner, the first thing which happens is the precession of spins around the direction of the external magnetic field (the z-axis). Now what happen, if another magnetic field is temporarily switched on in a different direction (let’s say in the direction of the x- or y-axis)?",
+                        trans: "مثل ما ذكرنا قبل بالقسم 1.8، إذا الشخص انحط بجهاز الرنين، أول شي يصير هو البدارية (precession) مال السبينات حول اتجاه المجال المغناطيسي الخارجي (محور z). هسة شراح يصير، لو شغلنا مجال مغناطيسي ثاني مؤقتاً باتجاه مختلف (خلي نكول باتجاه محور x أو y)؟"
+                    },
+                    {
+                        text: "Precession will occur around the direction of that magnetic field also.",
+                        trans: "البدارية راح تصير حول اتجاه هذا المجال المغناطيسي همين."
+                    },
+                    {
+                        text: "If the second applied magnetic field is static, the resultant movement of the net magnetization of a spin isochromatic will be a complicated motion due to precession from the two static fields. However, if the second magnetic field which is temporarily applied is oscillating with the frequency of precession of the precessing spins a simple rotation of the net magnetization vector results.",
+                        trans: "إذا المجال المغناطيسي الثاني المطبق كان ثابت، الحركة الناتجة لصافي التمغنط للسبين راح تكون حركة معقدة بسبب البدارية من المجالين الثابتين. بس، إذا المجال المغناطيسي الثاني المطبق مؤقتاً جان يتذبذب بتردد البدارية مال السبينات، راح تنتج حركة دوران بسيطة لمتجه صافي التمغنط."
+                    },
+                    {
+                        text: "(Rotation of magnetization into the x-y-plane is a \"90° pulse\". The dephasing of the components",
+                        trans: "(دوران التمغنط لمستوى x-y هو 'نبضة 90 درجة'. وعدم توافق الطور مكونات"
+                    }
+                ]
+            },
+            // السلايد الثاني
+            {
+                content: [
+                    {
+                        text: "of magnetization in the x-y-plane starts to occur straight away, as does the re-growth of magnetization in the z-direction as shown in next section).",
+                        trans: "التمغنط بمستوى x-y يبدي يصير فوراً، ونفس الشي إعادة نمو التمغنط باتجاه z مثل ما موضح بالقسم الجاي)."
+                    },
+                    {
+                        text: "1.11 Excitation",
+                        trans: "1.11 التهييج",
+                        isSubTitle: true
+                    },
+                    {
+                        text: "Before the system starts to be acquire the data must be perform a quick measurement (also, called pre-scan) to determine the frequency of protons which are spinning (Larmor frequency). Selecting this frequency is important because it uses the system for the next step.",
+                        trans: "قبل لا يبدي النظام يستحوذ عالبيانات لازم يسوي قياس سريع (يسموه pre-scan) حتى يحدد تردد البروتونات اللي دتفتر (تردد لارمور). اختيار هذا التردد مهم لأن النظام يستخدمه للخطوة الجاية."
+                    },
+                    {
+                        text: "Once the Larmor frequency is determined the system will start the acquisition. For now, we only send a radio frequency (RF) pulse (An RF pulse is a magnetic field, the direction of which is oscillating at the Larmor frequency) into the patient and we look at what happens.",
+                        trans: "بس يتحدد تردد لارمور، النظام يبدي الاستحواذ. حالياً، احنا بس نرسل نبضة تردد راديوي (RF) (نبضة RF هي مجال مغناطيسي، اتجاهه يتذبذب بتردد لارمور) لداخل المريض ونشوف شيصير."
+                    },
+                    {
+                        text: "The oscillating magnetic field at the Larmor frequency is switched on for a very small amount of time (a few milliseconds) to achieve such a rotation. This magnetic field is called an RF pulse; it is short (a burst or pulse) and the Larmor frequency for MRI is in the radio frequency range (tens of MHz). This process is sometimes called RF excitation of the spin system. Different amounts of rotation can be achieved by applying the oscillating magnetic field for different durations.",
+                        trans: "المجال المغناطيسي المتذبذب بتردد لارمور يشتغل لفترة كلش قصيرة (بضع ملي ثواني) حتى يحقق هذا الدوران. هذا المجال المغناطيسي نسميه نبضة RF؛ وتكون قصيرة (دفعة أو نبضة) وتردد لارمور للرنين يكون ضمن نطاق التردد الراديوي (عشرات الميغاهرتز). هاي العملية مرات يسموها تهييج RF لنظام السبين. كميات مختلفة من الدوران نكدر نحصلها بتسليط المجال المغناطيسي المتذبذب لفترات مختلفة."
+                    },
+                    {
+                        text: "To understand it more deeply can through the following example: Let us assume we work with a 1.5 Tesla system. The center or operating frequency of the system is 63.855 MHz (Calculated using the Larmor equation: ωo=γBo). In order to manipulate the net magnetization, we will therefore have to send a Radio Frequency (RF) pulse with a frequency that matches the center frequency of the system: 63.855 MHz This is where the Resonance comes from in the name Magnetic Resonance Imaging. Resonance you know from the opera singer who sings a high note and the crystal glass shatters to pieces. MRI works with the same principle.",
+                        trans: "حتى نفهمها بعمق أكثر نكدر نشوف المثال التالي: نفرض دشتغل بنظام 1.5 تسلا. المركز أو تردد التشغيل للنظام هو 63.855 ميغاهرتز (محسوب باستخدام معادلة لارمور). حتى نتلاعب بصافي التمغنط، لازم نرسل نبضة تردد راديوي (RF) بتردد يطابق التردد المركزي للنظام: 63.855 ميغاهرتز. ومن هنا يجي 'الرنين' باسم تصوير الرنين المغناطيسي. الرنين تعرفه من مغني الأوبرا من يغني نوتة عالية وكلاس الكريستال يطك ويصير قطع. الرنين يشتغل بنفس المبدأ."
+                    }
+                ]
+            },
+            // السلايد الثالث
+            {
+                content: [
+                    {
+                        text: "Only protons that spin with the same frequency as the RF pulse will respond to that RF pulse.",
+                        trans: "بس البروتونات اللي تفتر بنفس تردد نبضة الـ RF راح تستجيب لهالنبضة."
+                    },
+                    {
+                        text: "If we would send an RF pulse with a different frequency, let's say 59.347 MHz, nothing would happen. Therefore, by sending an RF pulse at the Larmor Frequency, with certain strength (amplitude) and for a certain period of time it is possible to rotate the net magnetization into a plane perpendicular to the Z-axis, in this case the X-Y plane (Figure 16).",
+                        trans: "لو دزينا نبضة RF بتردد مختلف، كول مثلاً 59.347 MHz، ماكو شي راح يصير. لذلك، بإرسال نبضة RF بتردد لارمور، بقوة معينة (سعة) ولفترة زمنية معينة، يصير ممكن ندور صافي التمغنط لمستوى عمودي على محور Z، بهالحالة مستوى X-Y (الشكل 16)."
+                    },
+                    {
+                         type: 'image',
+                         src: 'figure16_xy_plane.jpg'
+                    },
+                    {
+                        text: "(Note how by use of the vectors facilitated imagine what is happening, without the use of vectors would be quite impossible that this event draws).",
+                        trans: "(لاحظ شلون استخدام المتجهات سهل تخيل اللي ديصير، بدون استخدام المتجهات جان صار شبه مستحيل رسم هذا الحدث)."
+                    },
+                    {
+                        text: "We just “flipped” the net magnetization 90°. Later we will see that there is a parameter in our pulse sequence, called the Flip Angle (FA), which indicates the number of degrees we rotate the net magnetization. It is possible to flip the net",
+                        trans: "احنا تونا 'كلبنا' صافي التمغنط 90 درجة. بعدين راح نشوف اكو معامل بتسلسل النبضة مالتنا، اسمه زاوية الانقلاب (Flip Angle - FA)، اللي يحدد عدد الدرجات اللي نفر بيها صافي التمغنط. ممكن نكلب صافي"
+                    }
+                ]
+            },
+            // السلايد الرابع
+            {
+                content: [
+                    {
+                        text: "magnetization any degree in the range from 1° to 180°. For now, we only use an FA of 90°. This process is called excitation.",
+                        trans: "التمغنط أي درجة بالنطاق من 1 إلى 180 درجة. حالياً، نستخدم بس FA أم الـ 90 درجة. هاي العملية تسمى التهييج."
+                    },
+                    {
+                        text: "1.12 Relaxation",
+                        trans: "1.12 الاسترخاء",
+                        isSubTitle: true
+                    },
+                    {
+                        text: "Now it becomes interesting. If the net magnetization rotated 90 degrees in x-y plane and this means the same thing if we say that the protons raised to a higher energy state.",
+                        trans: "هسة الموضوع يصير ممتع. إذا صافي التمغنط دار 90 درجة بمستوى x-y، هذا يعني نفس الشي إذا كلنا أن البروتونات ارتفعت لحالة طاقة أعلى."
+                    },
+                    {
+                        text: "This occurs because the protons absorbed energy from the RF pulse. This is called the perturbation that protons do not \"like or want\" continue in high energy situation \"excitation\" they tend to return to the normal or low energy situation \"equilibrium\". This can be compared with the abnormal situation in the case of walking on your hands, this is possible, but you do not want to continue this case for a long time and you inevitably you prefer the natural state is walking on your feet.",
+                        trans: "هذا يصير لأن البروتونات امتصت طاقة من نبضة الـ RF. هذا يسموه الاضطراب، البروتونات ما 'تحب أو تريد' تستمر بوضع الطاقة العالية 'التهييج'، وتميل أنها ترجع للوضع الطبيعي أو وضع الطاقة المنخفضة 'التوازن'. هذا نكدر نقارنه بالوضع المو طبيعي بحالة المشي على ايديك، هذا ممكن، بس ما تريد تستمر بهالحالة لفترة طويلة ولابد تفضل الحالة الطبيعية وهي المشي على رجليك."
+                    },
+                    {
+                        text: "A general principle of thermodynamics is that every system seeks its lowest energy level. The same thing for the protons, and they prefer the lineup with the main magnetic field or, in other words, they would be in a low power state.",
+                        trans: "مبدأ عام بالديناميكا الحرارية هو أن كل نظام يسعى لأقل مستوى طاقة اله. نفس الشي للبروتونات، هي تفضل تصطف ويا المجال المغناطيسي الرئيسي، أو بعبارة ثانية، تكون بوضع طاقة منخفض."
+                    },
+                    {
+                        text: "The relaxation means the return of a perturbed system into the original situation \"equilibrium\" and each relaxation process can be characterization by a relaxation time. The relaxation process can be divided into two parts: T1 and T2 relaxation.",
+                        trans: "الاسترخاء يعني رجوع النظام المضطرب للوضع الأصلي 'التوازن' وكل عملية استرخاء تتميز بوقت استرخاء. عملية الاسترخاء تتقسم لجزئين: استرخاء T1 و T2."
+                    }
+                ]
+            }
+        ];
+
+        let currentIndex = 0;
+
+        function renderPage() {
+            const container = document.getElementById('contentArea');
+            const data = pages[currentIndex];
+            
+            document.getElementById('pageIndicator').innerText = `${currentIndex + 1} / ${pages.length}`;
+            document.getElementById('prevBtn').disabled = currentIndex === 0;
+            document.getElementById('nextBtn').disabled = currentIndex === pages.length - 1;
+
+            let html = '';
+            
+            data.content.forEach((item, idx) => {
+                if (item.type === 'image') {
+                    html += `
+                        <div class="lecture-image-container">
+                            <img src="${item.src}" alt="Lecture Figure" class="lecture-image">
+                        </div>
+                    `;
+                } else {
+                    let cssClass = "english-paragraph";
+                    if (item.isTitle) cssClass = "title-text";
+                    if (item.isSubTitle) cssClass = "sub-title";
+
+                    // تجهيز النص الإنكليزي بالكلمات التفاعلية
+                    const words = item.text.split(' ');
+                    let interactiveText = '';
+                    words.forEach(word => {
+                        const cleanWordForLookup = word.replace(/[.,()?!:;“”"°]/g, '').toLowerCase();
+                        interactiveText += `<span class="interactive-word" onclick="showWordMeaning('${cleanWordForLookup}', '${word}')">${word}</span> `;
+                    });
+
+                    html += `
+                        <div class="text-block">
+                            <div class="${cssClass}">
+                                ${interactiveText}
+                            </div>
+                            <button class="toggle-trans-btn" onclick="toggleTranslation('trans-${idx}')">
+                                إظهار الترجمة &#11015;
+                            </button>
+                            <div id="trans-${idx}" class="inline-translation">
+                                ${item.trans}
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            container.innerHTML = html;
+            window.scrollTo(0,0);
+        }
+
+        // دالة لإظهار/إخفاء الترجمة الفورية
+        function toggleTranslation(id) {
+            const el = document.getElementById(id);
+            if (el.style.display === "block") {
+                el.style.display = "none";
+            } else {
+                el.style.display = "block";
+            }
+        }
+
+        let currentWordForAudio = "";
+
+        // دالة عرض معنى الكلمة الفردية (في الصندوق السفلي)
+        function showWordMeaning(cleanWord, originalWord) {
+            const translation = dictionary[cleanWord] || "---"; 
+            
+            currentWordForAudio = originalWord.replace(/[.,()?!:;“”"°]/g, '');
+
+            const box = document.getElementById('selectedWordBox');
+            const enSpan = document.getElementById('swEnglish');
+            const arSpan = document.getElementById('swArabic');
+
+            enSpan.innerText = currentWordForAudio; 
+            arSpan.innerText = translation;
+
+            // إظهار الـ Bottom Sheet
+            const overlay = document.getElementById('sheetOverlay');
+            overlay.classList.add('active');
+        }
+
+        // دالة نطق الكلمة
+        function playAudio() {
+            if (currentWordForAudio) {
+                const utterance = new SpeechSynthesisUtterance(currentWordForAudio);
+                utterance.lang = 'en-US'; 
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // إغلاق الـ Bottom Sheet
+        function closeSheet(e) {
+            if (e.target.id === 'sheetOverlay') {
+                const overlay = document.getElementById('sheetOverlay');
+                overlay.classList.remove('active');
+            }
+        }
+
+        function changePage(dir) {
+            currentIndex += dir;
+            renderPage();
+        }
+
+        renderPage();
+
+    </script>
+</body>
+</html>
